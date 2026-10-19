@@ -1,0 +1,4 @@
+*.lnk
+.vscode/
+.idea/
+CONVERSATION.md

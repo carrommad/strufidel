@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpectroDraw - Dibujador de Espectrogramas Sonoros</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon"></div>
+        <div>
+          <h1>SpectroDraw</h1>
+          <p class="subtitle">Dibuja en el espectrograma y sintetiza audio</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-export-wav" class="btn btn-secondary" title="Exportar audio generado como archivo WAV">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar WAV
+        </button>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="tool-group">
+        <span class="group-label">Herramientas</span>
+        <button id="tool-brush" class="tool-btn active" title="Pincel (Tono brillante y presente)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 2 4 4-10 10H8v-4L18 2z"/><path d="m14 6 4 4"/><path d="M4 20h16"/></svg>
+          Pincel
+        </button>
+        <button id="tool-highlighter" class="tool-btn" title="Subrayador (Tono suave / armónico etéreo)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h3l6-6"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>
+          Subrayador
+        </button>
+        <button id="tool-eraser" class="tool-btn" title="Goma de borrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+          Goma
+        </button>
+      </div>
+
+      <div class="tool-group">
+        <span class="group-label">Grosor: <span id="val-brush-size">14</span>px</span>
+        <input type="range" id="brush-size" min="2" max="60" value="14">
+      </div>
+
+      <div class="tool-group">
+        <span class="group-label">Preescucha en vivo</span>
+        <label class="toggle-switch" title="Escuchar el tono mientras pasas el ratón/dibujas">
+          <input type="checkbox" id="chk-live-preview" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="tool-group">
+        <span class="group-label">Afinación:</span>
+        <select id="select-scale" class="select-input" title="Ajustar alturas a notas musicales">
+          <option value="chromatic">Cromática (12 semitonos)</option>
+          <option value="free">Libre / Continuo (sin escala)</option>
+          <option value="major">Escala Mayor (Do - C)</option>
+          <option value="minor">Escala Menor (La - Am)</option>
+          <option value="pentatonic">Pentatónica</option>
+        </select>
+      </div>
+
+      <div class="tool-group">
+        <span class="group-label">Zoom vertical:</span>
+        <button id="btn-zoom-out" class="btn btn-sm btn-secondary" title="Reducir zoom">-</button>
+        <span id="val-zoom" style="font-size:0.82rem; font-weight:600; min-width:34px; text-align:center;">1x</span>
+        <button id="btn-zoom-in" class="btn btn-sm btn-secondary" title="Aumentar zoom">+</button>
+        <button id="btn-zoom-reset" class="btn btn-sm btn-secondary" title="Restablecer zoom a 1x">Reset</button>
+      </div>
+
+      <div class="tool-group tool-actions">
+        <button id="btn-clear" class="btn btn-outline-danger" title="Limpiar lienzo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          Limpiar
+        </button>
+      </div>
+    </div>
+
+    <main class="canvas-section">
+      <div class="freq-axis" id="freq-axis-container">
+        <span>10 kHz</span>
+        <span>5 kHz</span>
+        <span>2 kHz</span>
+        <span>1 kHz</span>
+        <span>440 Hz (A4)</span>
+        <span>220 Hz</span>
+        <span>100 Hz</span>
+        <span>50 Hz</span>
+      </div>
+
+      <div class="canvas-wrapper" id="canvas-wrapper">
+        <canvas id="spectro-canvas" width="960" height="480"></canvas>
+        <canvas id="overlay-canvas" width="960" height="480"></canvas>
+      </div>
+    </main>
+
+    <footer class="playback-bar">
+      <div class="playback-controls">
+        <button id="btn-play" class="btn btn-primary btn-play">
+          <svg id="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <svg id="icon-pause" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <span id="text-play">Reproducir</span>
+        </button>
+        <button id="btn-stop" class="btn btn-secondary" title="Detener y volver al inicio">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14"/></svg>
+        </button>
+        <label class="toggle-loop" title="Repetir en bucle">
+          <input type="checkbox" id="chk-loop" checked>
+          <span>Loop</span>
+        </label>
+      </div>
+
+      <div class="playback-settings">
+        <div class="param-item">
+          <label for="slider-duration">Duración: <span id="val-duration">5</span>s</label>
+          <input type="range" id="slider-duration" min="2" max="15" step="0.5" value="5">
+        </div>
+        <div class="param-item">
+          <label for="slider-volume">Volumen Master: <span id="val-volume">80</span>%</label>
+          <input type="range" id="slider-volume" min="0" max="100" value="80">
+        </div>
+        <div class="param-item">
+          <label for="select-waveform">Timbre de síntesis:</label>
+          <select id="select-waveform" class="select-input">
+            <option value="sine">Senoidal (Puro / Estándar)</option>
+            <option value="triangle">Triangular (Cálido)</option>
+            <option value="sawtooth">Diente de sierra (Brillante)</option>
+          </select>
+        </div>
+      </div>
+    </footer>
+
+    <section class="examples-section">
+      <div class="section-header">
+        <h2>Guía y Ejemplos de Escalas Musicales</h2>
+        <p>Haz clic en cualquier tarjeta para cargar su melodía en el lienzo y escuchar su carácter emocional.</p>
+      </div>
+
+      <div class="cards-grid">
+        <div class="example-card" data-example="major">
+          <div class="card-badge badge-major">Alegre y Brillante</div>
+          <h3>Escala Mayor</h3>
+          <p>La base de canciones alegres, himnos y melodías optimistas. Transmite claridad y resolución positiva.</p>
+          <button class="btn btn-sm btn-outline-example">Cargar en Lienzo</button>
+        </div>
+
+        <div class="example-card" data-example="minor">
+          <div class="card-badge badge-minor">Melancólica y Emotiva</div>
+          <h3>Escala Menor</h3>
+          <p>Sensación de misterio, tristeza o profundidad emocional. Muy usada en bandas sonoras dramáticas.</p>
+          <button class="btn btn-sm btn-outline-example">Cargar en Lienzo</button>
+        </div>
+
+        <div class="example-card" data-example="pentatonic">
+          <div class="card-badge badge-pentatonic">Armoniosa / Sin Error</div>
+          <h3>Pentatónica</h3>
+          <p>Usa solo 5 notas que encajan siempre bien entre sí. Típica del blues, rock clásico y música tradicional asiática.</p>
+          <button class="btn btn-sm btn-outline-example">Cargar en Lienzo</button>
+        </div>
+
+        <div class="example-card" data-example="chromatic">
+          <div class="card-badge badge-chromatic">Tensión y Suspenso</div>
+          <h3>Escala Cromática</h3>
+          <p>Incluye los 12 semitonos paso a paso. Genera sensación de intriga, pasos cautelosos o persecución.</p>
+          <button class="btn btn-sm btn-outline-example">Cargar en Lienzo</button>
+        </div>
+
+        <div class="example-card" data-example="free">
+          <div class="card-badge badge-free">Efecto Sirena / Sci-Fi</div>
+          <h3>Sonido Continuo (Libre)</h3>
+          <p>Sin escalas fijas ni saltos de notas. Permite deslizamientos suaves (*glissando*), sirenas y efectos cósmicos.</p>
+          <button class="btn btn-sm btn-outline-example">Cargar en Lienzo</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

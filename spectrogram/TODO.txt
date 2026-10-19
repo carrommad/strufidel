@@ -1,0 +1,9 @@
+- Añadir una pauta de tempo en la horizontal para añadir un criterio rítmico percusivo en base a ritmos de 3/4, 4/4, etc
+
+- Acotar el espectro continuo a notas concretas preestablecidas dentro de las distintas escalas según altura para crear acordes 
+
+- Añadir distintos sonidos entre los cuales: percusión, piano, voz humana y sonidos electrónicos
+
+- Hacer sonidos más claros y concisos como suena en la reproducción en vivo mientras se diseña 
+
+-
