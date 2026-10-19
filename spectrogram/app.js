@@ -213,6 +213,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  // Estado de las herramientas de dibujo
+  let currentTool = 'brush';
+  let isDrawing = false;
+  let lastX = 0;
+  let lastY = 0;
+
   // Selección de herramientas
   const toolButtons = [btnBrush, btnHighlighter, btnEraser];
   function setTool(tool, button) {
